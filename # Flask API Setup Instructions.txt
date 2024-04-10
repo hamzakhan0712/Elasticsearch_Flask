@@ -1,0 +1,423 @@
+# Flask API Setup Instructions
+
+                                 +----------------------------------------+
+                                 | Set up WSL for Docker                  |
+                                 +----------------+-----------------------+
+                                                  |
+                                                  |
+                     +-----------------------------v-----------------------------+
+                     |                Enable Virtual Machine Platform            |
+                     +-----------------------------+-----------------------------+
+                                                  |
+                                                  |
+                     +-----------------------------v-----------------------------+
+                     |         Enable WSL and Virtual Machine Platform           |
+                     +-----------------------------+-----------------------------+
+                                                  |
+                                                  |
+                     +-----------------------------v-----------------------------+
+                     |            Download the WSL2 Linux kernel update          |
+                     +-----------------------------+-----------------------------+
+                                                  |
+                                                  |
+                     +-----------------------------v-----------------------------+
+                     |            Install the WSL2 kernel update package         |
+                     +-----------------------------+-----------------------------+
+                                                  |
+                                                  |
+                     +-----------------------------v-----------------------------+
+                     |              Set WSL default version to 2                 |
+                     +-----------------------------+-----------------------------+
+                                                  |
+                                                  |
+                     +-----------------------------v-----------------------------+
+                     |                  Download Elasticsearch                   |
+                     +-----------------------------+-----------------------------+
+                                                  |
+                                                  |
+                     +-----------------------------v-----------------------------+
+                     |               Start Elasticsearch in Docker               |
+                     +-----------------------------+-----------------------------+
+                                                  |
+                                                  |
+                     +-----------------------------v-----------------------------+
+                     |                 Configure Elasticsearch                   |
+                     +-----------------------------+-----------------------------+
+                                                  |
+                                                  |
+                     +-----------------------------v-----------------------------+
+                     |          Pull and run the Elasticsearch Docker image      |
+                     +-----------------------------+-----------------------------+
+                                                  |
+                                                  |
+                     +-----------------------------v-----------------------------+
+                     |              Create a new directory for the Flask API     |
+                     +-----------------------------+-----------------------------+
+                                                  |
+                                                  |
+                     +-----------------------------v-----------------------------+
+                     |                   Change to the new directory             |
+                     +-----------------------------+-----------------------------+
+                                                  |
+                                                  |
+                     +-----------------------------v-----------------------------+
+                     |                    Create a virtual environment           |
+                     +-----------------------------+-----------------------------+
+                                                  |
+                                                  |
+                     +-----------------------------v-----------------------------+
+                     |                    Activate the virtual environment       |
+                     +-----------------------------+-----------------------------+
+                                                  |
+                                                  |
+                     +-----------------------------v-----------------------------+
+                     |            Install Flask and required dependencies        |
+                     +-----------------------------+-----------------------------+
+                                                  |
+                                                  |
+                     +-----------------------------v-----------------------------+
+                     |                          Test the API                     |
+                     +-----------------------------------------------------------+
+ 
+
+
+Follow these instructions carefully to run the Flask API using Flask. Make sure to complete all the steps in order.
+
+## Set up WSL for Docker
+
+1. Open Command Prompt and run the following command:
+dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+
+then
+
+Enable Virtual Machine Platform:
+dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+
+OR
+
+2. Enable WSL and Virtual Machine Platform:
+- Search for "Turn Windows features on or off" in the Windows search bar.
+- Check the boxes for "Virtual Machine Platform" and "Windows Subsystem for Linux".
+- Restart your PC.
+
+## Install and Configure Elasticsearch
+
+3. Download the WSL2 Linux kernel update package from [WSL2 Linux kernel update package](https://learn.microsoft.com/en-gb/windows/wsl/install-manual#step-4---download-the-linux-kernel-update-package).
+
+4. Install the WSL2 kernel update package according to the instructions provided.
+
+5. Set WSL default version to 2:
+- Open Command Prompt and run the following command:
+  ```
+  wsl --set-default-version 2
+  ```
+
+6. Download Elasticsearch from the official Elasticsearch downloads page at [https://www.elastic.co/downloads/elasticsearch](https://www.elastic.co/downloads/elasticsearch).
+
+7. Start Elasticsearch in Docker:
+- Open Command Prompt and navigate to the `elasticsearch-8.8.1/bin` directory.
+- Run the following command:
+  ```
+  elasticsearch.bat
+  ```
+
+8. Configure Elasticsearch:
+- Open the `elasticsearch.yml` file located in the `config` folder.
+- Add the following code at the bottom of the file:
+  ```
+  # Enable security features
+  xpack.security.enabled: true
+  xpack.security.enrollment.enabled: true
+  
+  # Enable encryption for HTTP API client connections
+  xpack.security.http.ssl:
+    enabled: true
+    keystore.path: certs/http.p12
+  
+  # Enable encryption and mutual authentication between cluster nodes
+  xpack.security.transport.ssl:
+    enabled: true
+    verification_mode: certificate
+    keystore.path: certs/transport.p12
+    truststore.path: certs/transport.p12
+  
+  # Create a new cluster with the current node only
+  cluster.initial_master_nodes: ["DESKTOP-MRD9AAF"]
+  
+  # Allow HTTP API connections from anywhere
+  http.host: 0.0.0.0
+  ```
+
+9. Pull and run the Elasticsearch Docker image:
+ - Open Command Prompt and run the following commands:
+   ```
+   docker pull docker.elastic.co/elasticsearch/elasticsearch:7.15.0
+
+   docker run -d --name elasticsearch-container -p 9200:9200 -p 9300:9300 -e 
+"discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:7.15.0
+   ```
+
+## Set up the Flask API
+
+10. Create a new directory for the Flask API:
+ - Open Command Prompt and navigate to your desired directory.
+ - Run the following command to create a new directory:
+   ```
+   mkdir flask-api
+   ```
+
+11. Change to the newly created directory:
+ - Run the following command:
+   ```
+   cd flask-api
+   ```
+
+12. Create a virtual environment:
+ - Run the following command to create a new virtual environment:
+   ```
+   python -m venv env
+   ```
+
+13. Activate the virtual environment:
+ - Run the following command:
+   ```
+   source env/Scripts/activate
+   ```
+
+14. Install Flask and required dependencies:
+ - Run the following command:
+   ```
+   pip install Flask flask-restful elasticsearch
+   ```
+
+## Test the API
+
+15. Test the API:
+ - Open a web browser or use a tool like Postman to access the API endpoints at `http://localhost:5000`.
+
+## API Usage Examples
+
+Here are some examples of API endpoints you can use with the Flask API:
+
+- Create an Index:
+curl -XPUT http://localhost:9200/<index_name>
+
+
+- Check if an Index Exists:
+curl -XHEAD -i http://localhost:9200/<index_name>
+
+
+- Get Index Information:
+curl -XGET http://localhost:9200/<index_name>
+
+
+- Delete an Index:
+curl -XDELETE http://localhost:9200/<index_name>
+
+
+- Get a Document:
+curl -XGET http://localhost:9200/<index_name>/_doc/<document_id>
+
+
+- Check all the indexes in the container:
+curl -XGET http://localhost:9200/_cat/indices?v
+
+
+- Search Document in Readable Form:
+curl -XGET http://localhost:9200/<index_name>/_search?pretty
+
+16. Cloud Deployments Details
+
+To run the data on the cloud using Elasticsearch, follow these steps:
+
+1. Sign up for an Elasticsearch service provider or set up your own Elasticsearch cluster on a cloud platform like Amazon Web Services (AWS), Google Cloud Platform (GCP), or Microsoft Azure. Make sure you have the necessary credentials and connection details.
+
+2. Connect to your Elasticsearch cluster using the provided credentials and connection details.
+
+3. Use the following URLs and methods to interact with your Elasticsearch cluster:
+
+- Get Mapping:
+  URL: GET /<index_name>/_mapping
+  Method: GET
+
+- Update Mapping:
+  URL: PUT /<index_name>/_mapping
+  Method: PUT
+  Body (raw JSON):
+  {
+    "properties": {
+      "play_name": {
+        "type": "text"
+      },
+      "author": {
+        "type": "text"
+      },
+      "year": {
+        "type": "integer"
+      },
+      "characters": {
+        "type": "keyword"
+      },
+      "summary": {
+        "type": "text"
+      },
+      "text": {
+        "type": "text"
+      }
+    }
+  }
+
+- Create Index with Mapping:
+  URL: PUT /<index_name>
+  Method: PUT
+  Body (raw JSON):
+  {
+    "mappings": {
+      "properties": {
+        "play_name": {
+          "type": "text"
+        },
+        "author": {
+          "type": "text"
+        },
+        "year": {
+          "type": "integer"
+        },
+        "characters": {
+          "type": "keyword"
+        },
+        "summary": {
+          "type": "text"
+        },
+        "text": {
+          "type": "text"
+        }
+      }
+    }
+  }
+
+- Index a Document:
+  URL: POST /<index_name>/_doc
+  Method: POST
+  Body (raw JSON): Specify the document data to be indexed
+
+- Get a Document by ID:
+  URL: GET /<index_name>/_doc/<document_id>
+  Method: GET
+
+- Update a Document:
+  URL: POST /<index_name>/_update/<document_id>
+  Method: POST
+  Body (raw JSON): Specify the update operation and new data
+
+- Delete a Document:
+  URL: DELETE /<index_name>/_doc/<document_id>
+  Method: DELETE
+
+- Search Documents:
+  URL: POST /<index_name>/_search
+  Method: POST
+  Body (raw JSON): Specify the search query
+
+- Delete an Index:
+  URL: DELETE /<index_name>
+  Method: DELETE
+
+Replace `<index_name>` with the name of your Elasticsearch index, and `<document_id>` with the ID of the specific document you want to access or update.
+
+Make sure to use the appropriate endpoint URLs provided by your Elasticsearch service provider or cloud platform. Adjust the base URL and authentication if necessary.
+
+17. Postman URLs
+
+You can also use Postman to interact with your Elasticsearch cluster. Here are some example URLs and instructions:
+
+URL: GET http://localhost:9200/<index_name>/_mapping
+Method: GET
+
+URL: PUT http://localhost:9200/<index_name>/_mapping
+Method: PUT
+Body (raw JSON):
+{
+  "properties": {
+    "play_name": {
+      "type": "text"
+    },
+    "author": {
+      "type": "text"
+    },
+    "year": {
+      "type": "integer"
+    },
+    "characters": {
+      "type": "keyword"
+    },
+    "summary": {
+      "type": "text"
+    },
+    "text": {
+      "type": "text"
+    }
+  }
+}
+
+URL: PUT http://localhost:9200/<index_name>
+Method: PUT
+Body (raw JSON):
+{
+  "mappings": {
+    "properties": {
+      "play_name": {
+        "type": "text"
+      },
+      "author": {
+        "type": "text"
+      },
+      "year": {
+        "type": "integer"
+      },
+      "characters": {
+        "type": "keyword"
+      },
+      "summary": {
+        "type": "text"
+      },
+      "text": {
+        "type": "text"
+      }
+    }
+  }
+}
+
+URL: POST http://localhost:9200/<index_name>/_doc
+Method: POST
+Body (raw JSON): Specify the document data to be indexed
+
+URL: GET http://localhost:9200/<index_name>/_doc/<document_id>
+Method: GET
+
+URL: POST http://localhost:9200/<index_name>/_update/<document_id>
+Method: POST
+Body (raw JSON): Specify the update operation and new data
+
+URL: DELETE http://localhost:9200/<index_name>/_doc/<document_id>
+Method: DELETE
+
+URL: POST http://localhost:9200/<index_name>/_search
+Method: POST
+Body (raw JSON): Specify the search query
+
+URL: DELETE http://localhost:9200/<index_name>
+Method: DELETE
+
+Replace `<index_name>` with the name of your Elasticsearch index, and `<document_id>` with the ID of the specific document you want to access or update.
+
+Make sure to adjust the base URL and port based on the connection details provided by your Elasticsearch service provider or cloud platform.
+
+
+
+
+
+
+
+
+

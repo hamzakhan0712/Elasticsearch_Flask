@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Shakespeare Play Search</title>
+  <link rel="stylesheet" href="static/style.css">
+  <script src="https://kit.fontawesome.com/c5af9607d4.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <h1>Shakespeare Plays</h1>
+  <center>
+    <div class="search">
+        <input type="text" name="searchInput" id="searchInput" placeholder="Search by play name,author or characters (Ex.Romeo and Juliet)" required>
+        <button onclick="search()">Search</button>
+        <button class="add" onclick="showForm()"><i class="fas fa-plus"></i>Add Play</button>
+    </div>
+
+    <table id="resultsTable">
+      <thead>
+        <tr id="head">
+          <th>Play Name</th>
+          <th>Year</th>
+          <th>Author</th>
+          <th>Characters</th>
+          <th>Summary</th>
+          <th>Script (Sample)</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+          <tr id="noResultsRow" style="display: none;">
+            <td colspan="6">No documents found.</td>
+          </tr>
+      </tbody>      
+    </table>
+  </center>
+
+  <div id="overlay" class="overlay"></div>
+  <div id="insertFormContainer" class="container">
+    <span class="close-icon" onclick="hideForm()">
+      <i class="fas fa-times"></i>
+    </span>
+    <h3>Add Play</h3>
+    <form id="insertForm" onsubmit="insertDocument(event)">
+      <label for="playName">Play Name:</label>
+      <input type="text" name="playName" id="playName" required><br>
+  
+      <label for="author">Author:</label>
+      <input type="text" name="author" id="author" required><br>
+  
+      <label for="year">Year:</label>
+      <input type="number" name="year" id="year" pattern="[0-9]{4}" required><br>
+  
+      <label for="characters">Characters:</label>
+      <input type="text" name="characters" id="characters" required><br>
+  
+      <label for="summary">Summary:</label>
+      <textarea name="summary" id="summary" rows="4" required></textarea><br>
+  
+      <label for="text">Text:</label>
+      <textarea name="text" id="text" rows="10" required></textarea><br>
+  
+      <button type="submit">Insert Document</button>
+    </form>
+  </div>
+
+  <script>
+    function showForm() {
+      var container = document.getElementById("insertFormContainer");
+      container.style.display = "block";
+      overlay.classList.add("show");
+    }
+    function hideForm() {
+      var container = document.getElementById("insertFormContainer");
+      container.style.display = "none";
+      overlay.classList.remove("show");
+    }
+    function insertDocument(event) {
+      event.preventDefault();
+      var playNameInput = document.getElementById("playName").value;
+      var authorInput = document.getElementById("author").value;
+      var yearInput = document.getElementById("year").value;
+      var charactersInput = document.getElementById("characters").value;
+      var summaryInput = document.getElementById("summary").value;
+      var textInput = document.getElementById("text").value;
+      fetch("/api/insert_document", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          play_name: playNameInput,
+          author: authorInput,
+          year: yearInput,
+          characters: charactersInput,
+          summary: summaryInput,
+          text: textInput
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          alert("Document inserted successfully!");
+          document.getElementById("insertForm").reset();
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
+    }
+    function search() {
+  var searchInput = document.getElementById("searchInput").value;
+  var noResultsRow = document.getElementById("noResultsRow")
+  fetch("/api/search_document", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      query: searchInput.toString() 
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 200) {
+      if (data.documents.length === 0) {
+        noResultsRow.style.display = "block";
+      } else {
+        displayResults(data.documents)
+      }
+    }
+  })
+  .catch(error => {
+    console.error("Error:", error);
+  });
+}
+    function displayResults(documents) {
+      var tableBody = document.getElementById("tbody");
+      tableBody.innerHTML = '';
+
+      documents.forEach(function(document) {
+        var row = tableBody.insertRow();
+
+        var cell1 = row.insertCell(0);
+        cell1.textContent = document.play_name;
+
+        var cell2 = row.insertCell(1);
+        cell2.textContent = document.year;
+
+        var cell3 = row.insertCell(2);
+        cell3.textContent = document.author;
+
+        var cell4 = row.insertCell(3);
+        cell4.textContent = document.characters;
+
+        var cell5 = row.insertCell(4);
+        cell5.textContent = document.summary;
+
+        var cell6 = row.insertCell(5);
+        cell6.innerHTML = `<pre>${document.text}</pre>`;
+      });
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
