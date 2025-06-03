@@ -63,6 +63,24 @@
   </div>
 
   <script>
+
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchAllPlays();
+    });
+
+    function fetchAllPlays() {
+      fetch("/api/plays")
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 200) {
+            displayResults(data.data);
+          }
+        })
+        .catch(error => {
+          console.error("Error loading plays:", error);
+        });
+    }
+
     function showForm() {
       var container = document.getElementById("insertFormContainer");
       container.style.display = "block";
@@ -73,6 +91,7 @@
       container.style.display = "none";
       overlay.classList.remove("show");
     }
+
     function insertDocument(event) {
       event.preventDefault();
       var playNameInput = document.getElementById("playName").value;
@@ -106,32 +125,34 @@
         console.error("Error:", error);
       });
     }
+
     function search() {
-  var searchInput = document.getElementById("searchInput").value;
-  var noResultsRow = document.getElementById("noResultsRow")
-  fetch("/api/search_document", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      query: searchInput.toString() 
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.status === 200) {
-      if (data.documents.length === 0) {
-        noResultsRow.style.display = "block";
-      } else {
-        displayResults(data.documents)
-      }
+      var searchInput = document.getElementById("searchInput").value;
+      var noResultsRow = document.getElementById("noResultsRow")
+      fetch("/api/search_document", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          query: searchInput.toString() 
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          if (data.documents.length === 0) {
+            noResultsRow.style.display = "block";
+          } else {
+            displayResults(data.documents)
+          }
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
     }
-  })
-  .catch(error => {
-    console.error("Error:", error);
-  });
-}
+
     function displayResults(documents) {
       var tableBody = document.getElementById("tbody");
       tableBody.innerHTML = '';

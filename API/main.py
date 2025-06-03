@@ -1,6 +1,7 @@
 import flask
 from flask import Flask, jsonify, request, render_template
 from es import ESKNN
+import json
 
 app = Flask(__name__)
 
@@ -12,9 +13,22 @@ if result == 1 or result == 2:
 else:
     print('main.py -> Something went wrong with create index.')
 
+# Load Shakespeare data from local file
+with open('shakespeare_data.json', 'r', encoding='utf-8') as file:
+    SHAKESPEARE_PLAYS = json.load(file)
+
+
 @app.route('/', methods=['GET'])
 def home():
-    return render_template('index.html')
+    return render_template('index.html', plays=SHAKESPEARE_PLAYS)
+
+
+@app.route('/api/plays', methods=['GET'])
+def get_all_plays():
+    return jsonify({
+        "status": 200,
+        "data": SHAKESPEARE_PLAYS
+    })
 
 @app.route('/api/insert_document', methods=['POST'])
 def insert_document():
